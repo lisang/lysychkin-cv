@@ -315,7 +315,87 @@
         const navProfilePic = document.getElementById('nav-profile-pic');
         let scrollThreshold = introSection ? introSection.offsetHeight - 150 : 800; // Default fallback threshold
 
-        // Function to update the scroll threshold
+        // Section order for arrow key navigation
+        const sectionIds = ['intro', 'experience', 'education', 'skills', 'competitions'];
+        const headerHeight = 64; // Corresponds to h-16 (4rem)
+
+        /**
+         * Scrolls smoothly to the target section ID.
+         * @param {string} targetId 
+         */
+        const smoothScrollTo = (targetId) => {
+            const targetElement = document.getElementById(targetId);
+            if (targetElement) {
+                // Adjust position to account for the fixed header
+                const targetPosition = targetElement.offsetTop - headerHeight;
+                window.scrollTo({
+                    top: targetPosition,
+                    behavior: 'smooth'
+                });
+            }
+        };
+
+        // Function to handle arrow key navigation
+        const handleKeyDown = (e) => {
+            if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                // Prevent default arrow key behavior (native scrolling)
+                e.preventDefault(); 
+
+                // Determine the current visible section
+                const currentScrollY = window.scrollY + headerHeight + 1;
+                let currentIndex = -1;
+
+                // Find the index of the first section that the user is currently scrolled past/at
+                for (let i = 0; i < sectionIds.length; i++) {
+                    const section = document.getElementById(sectionIds[i]);
+                    if (section && currentScrollY >= section.offsetTop) {
+                        currentIndex = i;
+                    } else if (section && currentScrollY < section.offsetTop) {
+                        // Optimization: if we are below the last confirmed section, stop checking.
+                        break; 
+                    }
+                }
+
+                // Default to the first section if we're at the very top, or the last if past the end
+                if (currentIndex === -1) {
+                    currentIndex = 0;
+                }
+
+                let nextIndex = currentIndex;
+
+                if (e.key === 'ArrowDown') {
+                    nextIndex = Math.min(currentIndex + 1, sectionIds.length - 1);
+                } else if (e.key === 'ArrowUp') {
+                    // For Up Arrow, we typically want the section *before* the currently focused one
+                    let targetIndex = currentIndex;
+                    
+                    // If the current section is at the very top of the scroll area, go to the one before it.
+                    const currentSection = document.getElementById(sectionIds[currentIndex]);
+                    if (currentSection && currentScrollY <= currentSection.offsetTop + 10) {
+                        targetIndex = currentIndex - 1;
+                    } else if (currentIndex === sectionIds.length - 1) {
+                        // If at the last section, but far below its start, scrolling up should go to its start.
+                        targetIndex = currentIndex;
+                    }
+
+                    nextIndex = Math.max(0, targetIndex);
+                }
+
+                // Only scroll if we are moving to a different section index
+                if (nextIndex !== currentIndex || (e.key === 'ArrowUp' && currentIndex === 0)) {
+                    smoothScrollTo(sectionIds[nextIndex]);
+                } else if (e.key === 'ArrowUp' && currentIndex === 0) {
+                     // Special case: If already at the first section, scroll to the absolute top of the page.
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            }
+        };
+
+        // Attach the keydown listener to the document
+        document.addEventListener('keydown', handleKeyDown);
+
+        // --- Existing Functions ---
+
         const updateScrollThreshold = () => {
             if (introSection) {
                 // Set threshold to the height of the intro section minus a small buffer (150px)
@@ -323,7 +403,6 @@
             }
         };
 
-        // Function to toggle the navigation picture visibility
         const toggleNavPicture = () => {
             if (window.scrollY > scrollThreshold) {
                 navProfilePic.classList.remove('hidden');
@@ -342,24 +421,12 @@
         toggleNavPicture();
 
 
-        // Optional: Smooth scroll for internal links (pure JS replacement for Bootstrap/jQuery)
+        // Refactor existing click handler to use smoothScrollTo
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
                 e.preventDefault();
-
                 const targetId = this.getAttribute('href').substring(1);
-                const targetElement = document.getElementById(targetId);
-
-                if (targetElement) {
-                    // Calculate target position, accounting for fixed header (h-16 or 4rem)
-                    const headerHeight = 64; 
-                    const targetPosition = targetElement.offsetTop - headerHeight;
-
-                    window.scrollTo({
-                        top: targetPosition,
-                        behavior: 'smooth'
-                    });
-                }
+                smoothScrollTo(targetId);
             });
         });
 
