@@ -48,8 +48,15 @@
     <!-- Fixed Navigation Bar -->
     <nav class="navbar-custom fixed top-0 left-0 right-0 z-50 transition duration-300">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex justify-between items-center">
-            <!-- Logo/Name -->
-            <a href="#intro" class="text-xl font-bold text-gray-900 tracking-tight">V. Lysychkin</a>
+            <!-- Logo/Name with small image -->
+            <a href="#intro" class="text-xl font-bold text-gray-900 tracking-tight flex items-center">
+                <!-- Small profile picture (initially hidden) -->
+                <img id="nav-profile-pic" 
+                     src="lysychkin.jpg" 
+                     alt="V.L." 
+                     class="w-8 h-8 rounded-full object-cover mr-2 hidden border border-gray-300 transition duration-300"/>
+                V. Lysychkin
+            </a>
             
             <!-- Links -->
             <div class="hidden md:flex space-x-8">
@@ -67,7 +74,7 @@
             
             <!-- Profile Picture -->
             <img src="lysychkin.jpg" 
-                 alt="Vladyslav Lysychkin Profile Picture Placeholder" 
+                 alt="Vladyslav Lysychkin Profile Picture" 
                  class="w-32 h-32 rounded-full mx-auto my-8 shadow-xl object-cover border-4 border-white"/>
 
             <h1 class="text-6xl sm:text-7xl font-extrabold text-gray-900 tracking-tighter mb-4">
@@ -194,10 +201,10 @@
                     </ul>
                 </div>
                 
-                <!-- Advanced Computer Science -->
+                <!-- Computer Science School -->
                 <div class="p-6 bg-white rounded-xl shadow-md border border-gray-100">
                     <i data-lucide="code" class="w-8 h-8 text-blue-600 mb-4"></i>
-                    <h4 class="text-xl font-semibold text-gray-900">Computer Science (Advanced Coursework)</h4>
+                    <h4 class="text-xl font-semibold text-gray-900">Computer Science School</h4>
                     <p class="text-gray-700 mt-1">School of Data Analysis by Yandex</p>
                     <p class="text-sm text-gray-500 mt-1 mb-4">2011 – 2013</p>
                     <p class="font-medium text-gray-900">Advanced Coursework in:</p>
@@ -298,10 +305,42 @@
         </div>
     </section>
 
-    <!-- Final JavaScript to Initialize Lucide Icons -->
+    <!-- Final JavaScript to Initialize Lucide Icons and Handle Scroll Visibility -->
     <script>
         // Use Lucide icons to replace SVG/FA icons for cleaner look
         lucide.createIcons();
+
+        // 1. Navbar Profile Picture Visibility Logic
+        const introSection = document.getElementById('intro');
+        const navProfilePic = document.getElementById('nav-profile-pic');
+        let scrollThreshold = introSection ? introSection.offsetHeight - 150 : 800; // Default fallback threshold
+
+        // Function to update the scroll threshold
+        const updateScrollThreshold = () => {
+            if (introSection) {
+                // Set threshold to the height of the intro section minus a small buffer (150px)
+                scrollThreshold = introSection.offsetHeight - 150;
+            }
+        };
+
+        // Function to toggle the navigation picture visibility
+        const toggleNavPicture = () => {
+            if (window.scrollY > scrollThreshold) {
+                navProfilePic.classList.remove('hidden');
+            } else {
+                navProfilePic.classList.add('hidden');
+            }
+        };
+
+        // Initial setup and listeners
+        window.addEventListener('load', updateScrollThreshold);
+        window.addEventListener('resize', updateScrollThreshold);
+        window.addEventListener('scroll', toggleNavPicture);
+        
+        // Run once on initial script load in case event listeners fire later
+        updateScrollThreshold();
+        toggleNavPicture();
+
 
         // Optional: Smooth scroll for internal links (pure JS replacement for Bootstrap/jQuery)
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
